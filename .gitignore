@@ -1,0 +1,7 @@
+/test/
+/.idea/
+/Converter/
+/__pycache__/
+Temperatureconverter.py
+funcs.py
+
