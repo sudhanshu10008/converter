@@ -1,12 +1,11 @@
-import Temperatureconverter as temp
 from converter_dict import dictionary
 from colorama import init, Fore, Style
 from rich.panel import Panel
 from rich import print as rprint
 
+init(autoreset = True)
 
 
-init(autoreset=True)
 def opt_iterator(ls, fill=15):
     bi = f"{Fore.LIGHTGREEN_EX}{Style.BRIGHT}[{Style.RESET_ALL}"
     bo = f"{Fore.LIGHTGREEN_EX}{Style.BRIGHT}]{Style.RESET_ALL}"
@@ -19,9 +18,9 @@ def opt_iterator(ls, fill=15):
                 print(bi + f"{i + 1}" + bo + "  " + f"{ls[i]}")
         else:
             if i < 9:
-                print("  " + bi + f"0{i + 1}" + bo + "  " + f"{ls[i]: <{fill}}", end="")
+                print("  " + bi + f"0{i + 1}" + bo + "  " + f"{ls[i]: <{fill}}", end = "")
             else:
-                print("  " + bi + f"{i + 1}" + bo + "  " + f"{ls[i]: <{fill}}", end="")
+                print("  " + bi + f"{i + 1}" + bo + "  " + f"{ls[i]: <{fill}}", end = "")
 
     str_back0 = bi + f"{Fore.LIGHTRED_EX}0{len(ls) - 1}{Style.RESET_ALL}" + bo + f"  {Fore.LIGHTRED_EX}{Style.BRIGHT}{ls[len(ls) - 2]: <{fill}}"
     str_back = bi + f"{Fore.LIGHTRED_EX}{len(ls) - 1}{Style.RESET_ALL}" + bo + f"  {Fore.LIGHTRED_EX}{Style.BRIGHT}{ls[len(ls) - 2]: <{fill}}"
@@ -30,20 +29,20 @@ def opt_iterator(ls, fill=15):
 
     if len(ls) % 2 != 0:
         if len(ls) < 10:
-            print("\n  " + str_back0, end="")
+            print("\n  " + str_back0, end = "")
             print(str_exit0)
         else:
-            print("\n  " + str_back, end="")
+            print("\n  " + str_back, end = "")
             print(str_exit)
     else:
         if len(ls) < 10:
-            print("  " + str_back0, end="")
+            print("  " + str_back0, end = "")
             print(str_exit0)
         elif len(ls) == 10:
             print("  " + str_back0, end = "")
             print(str_exit)
         else:
-            print("  " + str_back, end="")
+            print("  " + str_back, end = "")
             print(str_exit)
 
     while True:
@@ -79,7 +78,9 @@ def input_func(print_str: str = "Enter: ", digit: bool = True):
     else:
         return input(bi + "?" + bo + "  " + print_str).strip()
 
-def converter_func(dict_: dict, name: str, more: bool=False, more_dict: dict={}, fill: int = 20, back_func=exit):
+
+def converter_func(dict_: dict, name: str, more: bool = False, more_dict: dict | None = None, fill: int = 20,
+                   back_func=exit):
     # cl1 = Fore.LIGHTRED_EX + Style.BRIGHT
     # cl2 = Fore.LIGHTGREEN_EX + Style.BRIGHT
 
@@ -108,8 +109,9 @@ def converter_func(dict_: dict, name: str, more: bool=False, more_dict: dict={},
     elif s1 == len(cap_keys) - 1:
         back_func()
     elif more and s1 == len(cap_keys) - 2:
-        converter_func(dict_=more_dict, name=name, fill = fill, back_func=back_func)
-        exit()
+        converter_func(dict_ = more_dict, name = name, fill = fill, back_func = back_func)
+        converter_func(dict_ = dict_, name = name, more = more, more_dict = more_dict, fill = fill,
+                       back_func = back_func)
 
     input_value = input_func("Enter Value: ")
 
@@ -122,7 +124,8 @@ def converter_func(dict_: dict, name: str, more: bool=False, more_dict: dict={},
         back_func()
     elif more and s1 == len(cap_keys) - 2:
         converter_func(dict_ = more_dict, name = name, fill = fill, back_func = back_func)
-        exit()
+        converter_func(dict_ = dict_, name = name, more = more, more_dict = more_dict, fill = fill,
+                       back_func = back_func)
 
     s1_value = float(new_dict.get(cap_keys[s1 - 1]))
     s2_value = float(new_dict.get(cap_keys[s2 - 1]))
@@ -140,17 +143,30 @@ def converter_func(dict_: dict, name: str, more: bool=False, more_dict: dict={},
 def angle_con():
     converter_func(dictionary['angle'], name = "Angle", back_func = converter)
 
+
 def area_con():
     print("coming soon...")
 
+
 def energy_con():
-    converter_func(dictionary['energy_common'], more = True, more_dict = dictionary["energy_all"], name = "Energy", back_func = converter,fill = 25)
+    converter_func(dictionary['energy_common'], name = "Energy", more = True, more_dict = dictionary["energy_all"],
+                   fill = 25, back_func = converter)
+
 
 def length_con():
-    converter_func(dictionary['length_common'], more = True, more_dict = dictionary["length_all"], name="Length", back_func = converter)
+    converter_func(dictionary['length_common'], name = "Length", more = True, more_dict = dictionary["length_all"],
+                   back_func = converter)
+
+
+def speed_con():
+    converter_func(dictionary['speed_common'], name = "Speed", more = True, more_dict = dictionary["speed_all"],
+                   fill = 25, back_func = converter)
+
 
 def storage_con():
-    converter_func(dictionary["storage_common"], name = "Storage", more = True, more_dict = dictionary["storage_all"], back_func = converter)
+    converter_func(dictionary["storage_common"], name = "Storage", more = True, more_dict = dictionary["storage_all"],
+                   back_func = converter)
+
 
 def temp_con():
     cl1 = Fore.LIGHTRED_EX + Style.BRIGHT
@@ -196,14 +212,20 @@ def temp_con():
     x = (temp_dict.get(key))
     panel = Panel(x, title = "Answer", expand = False, padding = (0, 1), highlight = True)
     rprint(panel)
+
+
 def time_con():
-    converter_func(dictionary["time_common"], name = "Time", more = True, more_dict = dictionary["time_all"], back_func = converter)
+    converter_func(dictionary["time_common"], name = "Time", more = True, more_dict = dictionary["time_all"],
+                   back_func = converter)
+
 
 def volume_con():
     print("coming soon...")
 
+
 def weight_con():
     print("coming soon...")
+
 
 def converter():
     ls = list(dictionary["converter"])
@@ -216,6 +238,7 @@ def converter():
         area_con,
         energy_con,
         length_con,
+        speed_con,
         storage_con,
         temp_con,
         time_con,
@@ -227,12 +250,11 @@ def converter():
         great = " Wellcome To Converter "
         print(f"\n{great:-^60}")
         s = opt_iterator(ls, 25)
-        if int(s) == len(ls) or s == len(ls)-1:
+        if int(s) == len(ls) or s == len(ls) - 1:
             exit()
         else:
-            opt_ls[s-1]()
+            opt_ls[s - 1]()
 
 
 if __name__ == "__main__":
-    # funcs.converter_func(dictionary['length_common'], name="Length", back_func = converter)
     converter()
