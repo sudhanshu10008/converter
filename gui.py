@@ -1,33 +1,25 @@
 # import tkinter as tk
+import json
 import ttkbootstrap as tb
 from ttkbootstrap.constants import *
-from assets.converter_dict import dictionary as dic
 from ttkbootstrap.scrolled import ScrolledFrame
 
-# converter= [
-#         'Area Converter',
-#         "Angle Converter",
-#         'Length Converter',
-#         'Time Converter',
-#         "Volume Converter",
-#         'Weight Converter',
-#         "Speed Converter",
-#         "Storage Converter",
-#         "Energy Converter",
-#         'Temperature Converter',
-#     ]
+with open("./assets/dictionary.json", "r") as f:
+    _ = f.read()
+    dic = json.loads(_)
+
 converter_name = dic["converter"]
 converter_name.sort()
 
 
 class Converter_gui:
     def __init__(self) -> None:
-        self.root = tb.Window(title = "Converter", iconphoto="./assets/unit.ico")
+        self.root = tb.Window(title = "Converter", iconphoto = "./assets/unit.ico")
 
         # converter button frame
         self.left_side_frame = ScrolledFrame(master = self.root, padding = 2, name = "all", width = 180,
-                                             autohide = True)
-        self.left_side_frame.pack(fill = BOTH, side = LEFT, padx = 1, pady = 2)
+                                             autohide = True, relief = "sunken")
+        self.left_side_frame.pack(fill = BOTH, side = LEFT, padx = 2, pady = 1)
 
         # main converter frame
         self.right_side_frame = tb.Frame(master = self.root, padding = 2, width = 180)
@@ -50,6 +42,12 @@ class Converter_gui:
             self.name.pack(side = TOP, pady = 5)
 
         self.root.mainloop()
+
+    def left_frame(self, container):
+        pass
+
+    def right_frame(self, container):
+        pass
 
 
 c = Converter_gui()

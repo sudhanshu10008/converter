@@ -3,6 +3,7 @@
 <br>
 
 # **Features**
+
 This is powerful unit converter  
 list of converter
 
@@ -11,21 +12,28 @@ list of converter
 # **how to use**
 
 ## for linux
-first you need to install python in your computer  
-go to --> https://www.python.org/  
-download and install it  
+
+[//]: # (first you need to install python in your computer  )
+
+[//]: # (go to --> https://www.python.org/  )
+
+[//]: # (download and install it  )
+
 <br>
-- update 
+
+- update
+
   ```
   sudo apt update
   ```
+
 - Open terminal and install git
 
     ```
     sudo apt install git
     ```
 - Clone repo in your pc
-  
+
     ```
     git clone 
     ```
@@ -39,11 +47,10 @@ download and install it
   ```
 
 ## for termux
-first you need to install python in your computer  
-go to --> https://www.python.org/  
-download and install it  
+
 <br>
-- update 
+
+- update
   ```
   apt update
   ```
@@ -53,7 +60,7 @@ download and install it
     apt install git
     ```
 - Clone repo in your pc
-  
+
     ```
     git clone 
     ```
@@ -65,5 +72,6 @@ download and install it
   ```
   python converter.py
   ```
+
 <br>
 

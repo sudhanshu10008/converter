@@ -144,7 +144,7 @@ def converter_func(dict_: dict, name: str, more: bool = False, more_dict: dict |
 
 
 def angle_con():
-    converter_func(dic['angle'], name = "Angle", back_func = converter, fill = 25)
+    converter_func(dic['angle'], name = "Angle", back_func = converter, fill = 20)
 
 
 def area_con():
@@ -223,7 +223,8 @@ def time_con():
 
 
 def volume_con():
-    print("coming soon...")
+    converter_func(dic["volume_all"], name = "Volume",
+                   back_func = converter, fill = 20)
 
 
 def weight_con():
