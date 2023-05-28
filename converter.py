@@ -1,7 +1,11 @@
-from converter_dict import dictionary
+import json
 from colorama import init, Fore, Style
 from rich.panel import Panel
 from rich import print as rprint
+
+with open("./assets/dictionary.json", "r") as f:
+    _ = f.read()
+    dic = json.loads(_)
 
 init(autoreset = True)
 
@@ -81,9 +85,6 @@ def input_func(print_str: str = "Enter: ", digit: bool = True):
 
 def converter_func(dict_: dict, name: str, more: bool = False, more_dict: dict | None = None, fill: int = 20,
                    back_func=exit):
-    # cl1 = Fore.LIGHTRED_EX + Style.BRIGHT
-    # cl2 = Fore.LIGHTGREEN_EX + Style.BRIGHT
-
     keys = list(dict_.keys())
     cap_keys = []
     for i in range(len(keys)):
@@ -99,7 +100,7 @@ def converter_func(dict_: dict, name: str, more: bool = False, more_dict: dict |
     cap_keys.append("Exit Program")
 
     great = f" Wellcome To {name} Converter "
-    print(f"\n{great:-^50}")
+    print(f"\n{great:-^60}")
 
     print("\nWhat to convert:- ")
     s1 = opt_iterator(cap_keys, fill)
@@ -110,8 +111,9 @@ def converter_func(dict_: dict, name: str, more: bool = False, more_dict: dict |
         back_func()
     elif more and s1 == len(cap_keys) - 2:
         converter_func(dict_ = more_dict, name = name, fill = fill, back_func = back_func)
-        converter_func(dict_ = dict_, name = name, more = more, more_dict = more_dict, fill = fill,
-                       back_func = back_func)
+        while True:
+            converter_func(dict_ = dict_, name = name, more = more, more_dict = more_dict, fill = fill,
+                           back_func = back_func)
 
     input_value = input_func("Enter Value: ")
 
@@ -120,12 +122,13 @@ def converter_func(dict_: dict, name: str, more: bool = False, more_dict: dict |
 
     if s2 == len(cap_keys):
         exit()
-    elif s1 == len(cap_keys) - 1:
+    elif s2 == len(cap_keys) - 1:
         back_func()
-    elif more and s1 == len(cap_keys) - 2:
+    elif more and s2 == len(cap_keys) - 2:
         converter_func(dict_ = more_dict, name = name, fill = fill, back_func = back_func)
-        converter_func(dict_ = dict_, name = name, more = more, more_dict = more_dict, fill = fill,
-                       back_func = back_func)
+        while True:
+            converter_func(dict_ = dict_, name = name, more = more, more_dict = more_dict, fill = fill,
+                           back_func = back_func)
 
     s1_value = float(new_dict.get(cap_keys[s1 - 1]))
     s2_value = float(new_dict.get(cap_keys[s2 - 1]))
@@ -141,7 +144,7 @@ def converter_func(dict_: dict, name: str, more: bool = False, more_dict: dict |
 
 
 def angle_con():
-    converter_func(dictionary['angle'], name = "Angle", back_func = converter)
+    converter_func(dic['angle'], name = "Angle", back_func = converter, fill = 25)
 
 
 def area_con():
@@ -149,23 +152,23 @@ def area_con():
 
 
 def energy_con():
-    converter_func(dictionary['energy_common'], name = "Energy", more = True, more_dict = dictionary["energy_all"],
+    converter_func(dic['energy_common'], name = "Energy", more = True, more_dict = dic["energy_all"],
                    fill = 25, back_func = converter)
 
 
 def length_con():
-    converter_func(dictionary['length_common'], name = "Length", more = True, more_dict = dictionary["length_all"],
-                   back_func = converter)
+    converter_func(dic['length_common'], name = "Length", more = True, more_dict = dic["length_all"],
+                   back_func = converter, fill = 25)
 
 
 def speed_con():
-    converter_func(dictionary['speed_common'], name = "Speed", more = True, more_dict = dictionary["speed_all"],
+    converter_func(dic['speed_common'], name = "Speed", more = True, more_dict = dic["speed_all"],
                    fill = 25, back_func = converter)
 
 
 def storage_con():
-    converter_func(dictionary["storage_common"], name = "Storage", more = True, more_dict = dictionary["storage_all"],
-                   back_func = converter)
+    converter_func(dic["storage_common"], name = "Storage", more = True, more_dict = dic["storage_all"],
+                   back_func = converter, fill = 25)
 
 
 def temp_con():
@@ -215,8 +218,8 @@ def temp_con():
 
 
 def time_con():
-    converter_func(dictionary["time_common"], name = "Time", more = True, more_dict = dictionary["time_all"],
-                   back_func = converter)
+    converter_func(dic["time_common"], name = "Time", more = True, more_dict = dic["time_all"],
+                   back_func = converter, fill = 25)
 
 
 def volume_con():
@@ -224,11 +227,12 @@ def volume_con():
 
 
 def weight_con():
-    print("coming soon...")
+    converter_func(dic["weight_common"], name = "Weight", more = True, more_dict = dic["weight_all"],
+                   back_func = converter, fill = 25)
 
 
 def converter():
-    ls = list(dictionary["converter"])
+    ls = list(dic["converter"])
     ls.sort()
     ls.append("Back")
     ls.append("Exit Program")
