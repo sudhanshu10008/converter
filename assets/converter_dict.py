@@ -1,4 +1,4 @@
-import json
+# import json
 
 dictionary = {
     "converter": [
@@ -436,10 +436,24 @@ dictionary = {
     },
 }
 
-x = json.dumps(dictionary, indent = 4)
-print(x)
-with open("dictionary.json", "w") as f:
-    f.write(x)
+TemperatureConverter = {
+    ("Celsius", "Celsius"): lambda x: x,
+    ("Celsius", "Kelvin"): lambda x: x + 273.15,
+    ("Celsius", "Fahrenheit"): lambda x: (x * 9 / 5) + 32,
+
+    ("Kelvin", "Celsius"): lambda x: x - 273.15,
+    ("Kelvin", "Kelvin"): lambda x: x,
+    ("Kelvin", "Fahrenheit"): lambda x: round((x - 273.15) * 9 / 5 + 32, 2),
+
+    ("Fahrenheit", "Celsius"): lambda x: round((x - 32) * 5 / 9, 2),
+    ("Fahrenheit", "Kelvin"): lambda x: round((x - 32) * 5 / 9 + 273.15, 2),
+    ("Fahrenheit", "Fahrenheit"): lambda x: x,
+}
+
+# x = json.dumps(dictionary, indent = 4)
+# print(x)
+# with open("dictionary.json", "w") as f:
+#     f.write(x)
 
 # "energy": {
 #     "base64": 'joule',
