@@ -1,15 +1,10 @@
 import json
-
-import ttkbootstrap as tb
-
-from ttkbootstrap.constants import *
-
-from ttkbootstrap.style import Bootstyle
-
-from tkinter.messagebox import showwarning
-
-import customtkinter as ctk
 import tkinter as tk
+from tkinter import font
+import ttkbootstrap as tb
+import customtkinter as ctk
+from ttkbootstrap.constants import *
+from tkinter.messagebox import showwarning, showinfo
 
 # from ttkbootstrap.scrolled import ScrolledFrame
 
@@ -39,7 +34,6 @@ with open("./assets/dicforgui.json", "r") as f:
 
 
 class Converter_gui:
-
     def __init__(self):
         self.root = tb.Window(
             title = "Converter",
@@ -47,9 +41,10 @@ class Converter_gui:
             resizable = (False, False),
             iconphoto = "./assets/uniticon.jpg",
         )  # minsize = (720, 480)
+        # self.root.configure(bg = "#cccccc")
 
-        self.frame1 = tb.Frame(self.root, relief = "solid", borderwidth = 1)
-        self.frame1['padding'] = 5
+        self.frame1 = tk.Frame(self.root, relief = SUNKEN, borderwidth = 1)
+        self.frame1.configure(padx = 5, pady = 5)
         self.frame1.pack(side = TOP, pady = 5, padx = 5, fill = X)
 
         self.frame1.columnconfigure(0, weight = 2)
@@ -60,13 +55,15 @@ class Converter_gui:
         self.setting_b = tb.Button(
             master = self.frame1,
             image = setting_img,
+            padding = (5, 3),
             # relief = GROOVE,
             bootstyle = (OUTLINE, PRIMARY),
             # background = 'black',
             # anchor = CENTER,
             command = self.setting_gui
+
         )
-        self.setting_b.grid(row = 0, column = 0, sticky = W)
+        self.setting_b.grid(row = 0, column = 0, sticky = W, padx = 10)
 
         self.label_select = tb.Label(
             self.frame1,
@@ -90,7 +87,17 @@ class Converter_gui:
         self.conv_cb.grid(row = 0, column = 1, sticky = W, pady = 10, ipadx = 10)
         self.conv_cb.bind('<<ComboboxSelected>>', self.conv_select)
 
-        self.frame2 = tb.LabelFrame(self.root, labelanchor = N, text = self.conv_cb_var.get())
+        self.cb_sb = tb.Scrollbar(
+            command = self.conv_cb.xview,
+            # style = ROUND
+        )
+
+        self.frame2 = tk.LabelFrame(
+            self.root,
+            relief = SUNKEN,
+            labelanchor = N,
+            text = f" {self.conv_cb_var.get()} ",
+        )
         self.frame2.pack(side = TOP, padx = (5, 5), pady = (10, 5), )
 
         self.frame3 = tb.Label(self.frame2)
@@ -156,7 +163,10 @@ class Converter_gui:
         self.root.mainloop()
 
     def setting_gui(self):
+        self.setting_b.configure(state = "disabled")
         s = Settings()
+        print(self.setting_b.cget("state"))
+        self.setting_b.configure(state = "normal")
 
     def conv_select(self, event):
         s = self.conv_cb_var.get()
@@ -283,7 +293,8 @@ class Settings(tb.Toplevel):
             master = theme_frame,
             variable = self.mode_var,
             values = self.mode_value,
-            command = self.mode_func
+            command = self.mode_func,
+            corner_radius = 5,
         )
         mode_opt.grid(row = 0, column = 1, **self.padding, sticky = "nsew")
 
@@ -316,9 +327,56 @@ class Settings(tb.Toplevel):
         font_frame = tb.LabelFrame(
             master = self,
             text = " Font Settings ",
-            height = 100,
         )
-        font_frame.pack(**self.padding, fill = X)
+        font_frame.pack(**self.padding, fill = BOTH, expand = True)
+
+        font_frame.columnconfigure(0, weight = 1)
+        font_frame.rowconfigure(0, weight = 1)
+
+        f_names = font.families()
+        global font_selected
+        font_selected = tk.Variable(value = f_names)
+
+        font_name_lb = tk.Listbox(
+            master = font_frame,
+            height = 10,
+            relief = SOLID,
+            borderwidth = 1,
+            selectmode = SINGLE,
+            listvariable = font_selected,
+
+        )
+        font_name_lb.grid(row = 0, rowspan = 3, column = 0, sticky = "nsew", **self.padding)
+        # font_name_lb.pack(expand = True, fill = tk.BOTH, side = tk.LEFT)
+
+        font_size_lf = tb.LabelFrame(
+            master = font_frame,
+            text = " Size ",
+            height = 100,
+            width = 100
+        )
+        font_size_lf.grid(row = 0, column = 1, sticky = "nsew", **self.padding)
+
+        def items_selected(event):
+            # get selected indices
+            selected_indices = font_name_lb.curselection()
+            # get selected items
+            selected_langs = ",".join([font_name_lb.get(i) for i in selected_indices])
+            msg = f'You selected: {selected_langs}'
+
+            showinfo(title = 'Information', message = msg)
+
+        font_name_lb.bind('<<ListboxSelect>>', items_selected)
+
+        font_name_frame_sb = tb.Scrollbar(
+            master = font_name_lb,
+            orient = tk.VERTICAL,
+            style = ROUND,
+            command = font_name_lb.yview,
+        )
+        font_name_frame_sb.pack(side = RIGHT, fill = Y)
+        font_name_lb["yscrollcommand"] = font_name_frame_sb.set
+        # font_name_frame_sb.grid(row = 0, column = 1, sticky = "ns")
 
     def mode_func(self, event):
         mode = self.mode_var.get()
@@ -334,6 +392,9 @@ class Settings(tb.Toplevel):
         # print(theme_name)
         style = tb.Style()
         style.theme_use(theme_name)
+
+    def font_get(self, event):
+        print(font_selected.get())
 
 
 Converter_gui()
