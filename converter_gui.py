@@ -37,10 +37,10 @@ class ConverterGui:
     def __init__(self):
         self.root = tb.Window(
             title = "Converter",
-            # themename = "litera",
             resizable = (False, False),
             iconphoto = "./assets/uniticon.jpg",
         )  # minsize = (720, 480)
+        # themename = "litera",
         # self.root.configure(bg = "#cccccc")
 
         self.frame1 = tk.Frame(self.root, relief = SUNKEN, borderwidth = 1)
@@ -268,7 +268,10 @@ class Settings(tb.Toplevel):
         self._underline = tb.Variable(value = self._actual["underline"])
         self._font = font.Font()
 
-        self.padding = {'padx': 5, 'pady': 5}
+        self.f_names = font.families()
+        self.font_family_names = tk.Variable(value = self.f_names)
+
+        self.padding = {'padx': 10, 'pady': 5}
 
         with open("./assets/config.json") as f:
             self.config_dic = json.loads(f.read())
@@ -347,26 +350,32 @@ class Settings(tb.Toplevel):
         font_frame.rowconfigure(0, weight = 1)
 
         font_family = self.font_family_frame(master = font_frame)
-        font_family.grid(row = 0, rowspan = 2, column = 0, columnspan = 2, sticky = "nsew", **self.padding)
+        font_family.grid(row = 0, rowspan = 4, column = 0, sticky = "nsew", **self.padding)
 
         font_size = self.font_size_frame(master = font_frame)
-        font_size.grid(row = 0, column = 2, sticky = "n", **self.padding)
+        font_size.grid(row = 0, column = 1, sticky = "nsew", **self.padding)
 
         font_weight = self.font_weight_frame(master = font_frame)
-        font_weight.grid(row = 1, column = 2, sticky = "ew", **self.padding)
+        font_weight.grid(row = 1, column = 1, sticky = "nsew", **self.padding)
+
+        font_slant = self.font_slant_frame(master = font_frame)
+        font_slant.grid(row = 2, column = 1, sticky = "nsew", **self.padding)
+
+        font_effect = self.font_effect_frame(master = font_frame)
+        font_effect.grid(row = 3, column = 1, sticky = "nsew", **self.padding)
+
+        font_preview = self.font_preview_frame(master = font_frame, padding = 5)
+        font_preview.grid(row = 4, column = 0, columnspan = 2, sticky = "nsew")
 
     def font_family_frame(self, master):
-        f_names = font.families()
-        global font_selected
-        font_selected = tk.Variable(value = f_names)
 
         font_family_lb = tk.Listbox(
             master = master,
-            height = 10,
+            # height = 10,
             relief = SOLID,
             borderwidth = 1,
             selectmode = SINGLE,
-            listvariable = self._family,
+            listvariable = self.font_family_names,
         )
         # font_name_lb.pack(expand = True, fill = tk.BOTH, side = tk.LEFT)
 
@@ -383,13 +392,14 @@ class Settings(tb.Toplevel):
 
     def font_size_frame(self, master):
         size_frame = tb.Frame(
-            master = master
+            master = master,
         )
         # size_frame.grid(row = 0, column = 1, sticky = "n", **self.padding)
 
         size_lbl = tb.Label(
             master = size_frame,
             text = "Size:",
+            font = "TkHeadingFont",
         )
         size_lbl.pack(side = TOP, anchor = W)
 
@@ -429,6 +439,71 @@ class Settings(tb.Toplevel):
 
         return font_weight_lf
 
+    def font_slant_frame(self, master):
+        slant_lframe = tb.Labelframe(
+            master, text = "Slant", padding = 5
+        )
+        # slant_lframe.pack(side = LEFT, fill = X, padx = 10, expand = YES)
+        opt_roman = tb.Radiobutton(
+            master = slant_lframe,
+            text = "roman",
+            value = "roman",
+            variable = self._slant,
+        )
+        opt_roman.invoke()
+        opt_roman.pack(side = LEFT, padx = 5, pady = 5)
+        opt_italic = tb.Radiobutton(
+            master = slant_lframe,
+            text = "italic",
+            value = "italic",
+            variable = self._slant,
+        )
+        opt_italic.pack(side = LEFT, padx = 5, pady = 5)
+        return slant_lframe
+
+    def font_effect_frame(self, master):
+        effects_lframe = tb.Labelframe(
+            master, text = "Effects", padding = 5
+        )
+        # effects_lframe.pack(side = LEFT, padx = (2, 0), fill = X, expand = YES)
+        opt_underline = tb.Checkbutton(
+            master = effects_lframe,
+            text = "underline",
+            variable = self._underline,
+        )
+        opt_underline.pack(side = LEFT, padx = 5, pady = 5)
+        opt_overstrike = tb.Checkbutton(
+            master = effects_lframe,
+            text = "overstrike",
+            variable = self._overstrike,
+        )
+        opt_overstrike.pack(side = LEFT, padx = 5, pady = 5)
+        return effects_lframe
+
+    def font_preview_frame(self, master, padding: int):
+        container = tb.Frame(master, padding = padding)
+        # container.pack(fill = BOTH, expand = YES, anchor = N)
+
+        header = tb.Label(
+            container,
+            text = "Preview",
+            font = "TkHeadingFont",
+        )
+        header.pack(fill = X, pady = 2, anchor = N)
+
+        content = "The quick brown fox jumps over the lazy dog."
+
+        self.preview_text = tb.Text(
+            master = container,
+            height = 3,
+            font = self._font,
+        )
+        self.preview_text.insert(END, content)
+        self.preview_text.pack(fill = BOTH, expand = YES)
+        # container.pack_propagate(False)
+
+        return container
+
     # def items_selected(event):
     #     # get selected indices
     #     selected_indices = font_name_lb.curselection()
@@ -454,8 +529,8 @@ class Settings(tb.Toplevel):
         style = tb.Style()
         style.theme_use(theme_name)
 
-    def font_get(self, event):
-        print(font_selected.get())
+    def font_change(self, event):
+        print(self.font_family_names.get())
 
 
 ConverterGui()
