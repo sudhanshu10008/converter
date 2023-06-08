@@ -33,7 +33,7 @@ with open("./assets/dicforgui.json", "r") as f:
 # instantiate the style with another theme_name
 
 
-class Converter_gui:
+class ConverterGui:
     def __init__(self):
         self.root = tb.Window(
             title = "Converter",
@@ -163,8 +163,8 @@ class Converter_gui:
         self.root.mainloop()
 
     def setting_gui(self):
-        self.setting_b.configure(state = "disabled")
-        s = Settings()
+        self.setting_b.config(state = "disabled")
+        Settings()
         print(self.setting_b.cget("state"))
         self.setting_b.configure(state = "normal")
 
@@ -256,7 +256,17 @@ class Settings(tb.Toplevel):
     def __init__(self):
         super().__init__()
         self.title("Settings")
-        self.geometry("500x500")
+        self.geometry()
+
+        self._default = font.nametofont("TkDefaultFont")
+        self._actual = self._default.actual()
+        self._size = tb.Variable(value = self._actual["size"])
+        self._family = tb.Variable(value = self._actual["family"])
+        self._slant = tb.Variable(value = self._actual["slant"])
+        self._weight = tb.Variable(value = self._actual["weight"])
+        self._overstrike = tb.Variable(value = self._actual["overstrike"])
+        self._underline = tb.Variable(value = self._actual["underline"])
+        self._font = font.Font()
 
         self.padding = {'padx': 5, 'pady': 5}
 
@@ -268,6 +278,8 @@ class Settings(tb.Toplevel):
 
         self.theme_value = self.config_dic["light theme"]
         self.theme_var = tb.StringVar(value = self.theme_value[0])
+
+        self.theme_var.trace("w", self.theme_change)
 
         self.theme_settings()
         self.font_setting()
@@ -315,11 +327,12 @@ class Settings(tb.Toplevel):
         #     direction = "below",
         # )
         global theme_opt
-        theme_opt = ctk.CTkOptionMenu(
+        theme_opt = tb.Combobox(
             master = theme_frame,
-            variable = self.theme_var,
+            font = self._font,
+            state = "readonly",
+            textvariable = self.theme_var,
             values = self.config_dic.get("light theme"),
-            command = self.theme_change,
         )
         theme_opt.grid(row = 1, column = 1, **self.padding, sticky = "nsew")
 
@@ -333,50 +346,99 @@ class Settings(tb.Toplevel):
         font_frame.columnconfigure(0, weight = 1)
         font_frame.rowconfigure(0, weight = 1)
 
+        font_family = self.font_family_frame(master = font_frame)
+        font_family.grid(row = 0, rowspan = 2, column = 0, columnspan = 2, sticky = "nsew", **self.padding)
+
+        font_size = self.font_size_frame(master = font_frame)
+        font_size.grid(row = 0, column = 2, sticky = "n", **self.padding)
+
+        font_weight = self.font_weight_frame(master = font_frame)
+        font_weight.grid(row = 1, column = 2, sticky = "ew", **self.padding)
+
+    def font_family_frame(self, master):
         f_names = font.families()
         global font_selected
         font_selected = tk.Variable(value = f_names)
 
-        font_name_lb = tk.Listbox(
-            master = font_frame,
+        font_family_lb = tk.Listbox(
+            master = master,
             height = 10,
             relief = SOLID,
             borderwidth = 1,
             selectmode = SINGLE,
-            listvariable = font_selected,
-
+            listvariable = self._family,
         )
-        font_name_lb.grid(row = 0, rowspan = 3, column = 0, sticky = "nsew", **self.padding)
         # font_name_lb.pack(expand = True, fill = tk.BOTH, side = tk.LEFT)
 
-        font_size_lf = tb.LabelFrame(
-            master = font_frame,
-            text = " Size ",
-            height = 100,
-            width = 100
-        )
-        font_size_lf.grid(row = 0, column = 1, sticky = "nsew", **self.padding)
-
-        def items_selected(event):
-            # get selected indices
-            selected_indices = font_name_lb.curselection()
-            # get selected items
-            selected_langs = ",".join([font_name_lb.get(i) for i in selected_indices])
-            msg = f'You selected: {selected_langs}'
-
-            showinfo(title = 'Information', message = msg)
-
-        font_name_lb.bind('<<ListboxSelect>>', items_selected)
-
-        font_name_frame_sb = tb.Scrollbar(
-            master = font_name_lb,
+        font_family_lb_sb = tb.Scrollbar(
+            master = font_family_lb,
             orient = tk.VERTICAL,
             style = ROUND,
-            command = font_name_lb.yview,
+            command = font_family_lb.yview,
         )
-        font_name_frame_sb.pack(side = RIGHT, fill = Y)
-        font_name_lb["yscrollcommand"] = font_name_frame_sb.set
+        font_family_lb_sb.pack(side = RIGHT, fill = Y)
+        font_family_lb["yscrollcommand"] = font_family_lb_sb.set
         # font_name_frame_sb.grid(row = 0, column = 1, sticky = "ns")
+        return font_family_lb
+
+    def font_size_frame(self, master):
+        size_frame = tb.Frame(
+            master = master
+        )
+        # size_frame.grid(row = 0, column = 1, sticky = "n", **self.padding)
+
+        size_lbl = tb.Label(
+            master = size_frame,
+            text = "Size:",
+        )
+        size_lbl.pack(side = TOP, anchor = W)
+
+        size_sb = tb.Spinbox(
+            master = size_frame,
+            from_ = 1,
+            to = 100,
+            increment = 1,
+            font = self._font,
+            textvariable = self._size,
+        )
+        size_sb.pack(side = TOP, anchor = W)
+        return size_frame
+
+    def font_weight_frame(self, master):
+        font_weight_lf = tb.LabelFrame(
+            master = master,
+            text = " Weight ",
+        )
+        # font_weight_lf.grid(row = 1, column = 1, sticky = "ew", **self.padding)
+        opt_normal = tb.Radiobutton(
+            master = font_weight_lf,
+            text = "normal",
+            value = "normal",
+            variable = self._weight,
+        )
+        opt_normal.invoke()
+        opt_normal.grid(row = 0, column = 0, padx = 5, pady = 5, sticky = "ew")
+
+        opt_bold = tb.Radiobutton(
+            master = font_weight_lf,
+            text = "bold",
+            value = "bold",
+            variable = self._weight,
+        )
+        opt_bold.grid(row = 0, column = 1, padx = 5, pady = 5, sticky = "ew")
+
+        return font_weight_lf
+
+    # def items_selected(event):
+    #     # get selected indices
+    #     selected_indices = font_name_lb.curselection()
+    #     # get selected items
+    #     selected_langs = ",".join([font_name_lb.get(i) for i in selected_indices])
+    #     msg = f'You selected: {selected_langs}'
+    #
+    #         # showinfo(title = 'Information', message = msg)
+    #
+    #     font_name_lb.bind('<<ListboxSelect>>', items_selected)
 
     def mode_func(self, event):
         mode = self.mode_var.get()
@@ -387,9 +449,8 @@ class Settings(tb.Toplevel):
             theme_opt.configure(values = self.config_dic.get("dark theme"))
             theme_opt.set(value = self.config_dic.get("dark theme")[0])
 
-    def theme_change(self, event):
+    def theme_change(self, *_):
         theme_name = self.theme_var.get()
-        # print(theme_name)
         style = tb.Style()
         style.theme_use(theme_name)
 
@@ -397,4 +458,4 @@ class Settings(tb.Toplevel):
         print(font_selected.get())
 
 
-Converter_gui()
+ConverterGui()
