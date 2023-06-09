@@ -258,25 +258,24 @@ class Settings(tb.Toplevel):
         super().__init__()
         self.title("Settings")
         self.geometry()
-        # self.resizable(False, False)
+        self.minsize(500, 525)
 
         self._default = font.nametofont("TkDefaultFont")
         self._actual = self._default.actual()
         self.size = tb.IntVar(value = self._actual["size"])
-        # self._family = tb.Variable(value = self._actual["family"])
         self._slant = tb.Variable(value = self._actual["slant"])
-        # print(type(self._actual["size"]))
-        # print(self._actual["size"])
         self._weight = tb.Variable(value = self._actual["weight"])
-        self._overstrike = tb.Variable(value = self._actual["overstrike"])
         self._underline = tb.Variable(value = self._actual["underline"])
-        self._font = font.Font()
+        self._overstrike = tb.Variable(value = self._actual["overstrike"])
 
+        # self._family = tb.Variable(value = self._actual["family"])
+        self._font = font.Font()
         f_names = list(font.families())
         f_names.sort()
         self.default_index = f_names.index(self._actual["family"])
         self._family = tk.Variable(value = f_names)
 
+        self.cur_fname = tb.StringVar()
         self.padding = {'padx': 10, 'pady': 5}
 
         with open("./assets/config.json") as f:
@@ -290,19 +289,16 @@ class Settings(tb.Toplevel):
 
         self.mode_var.trace("w", self.mode_func)
         self.theme_var.trace("w", self.theme_change)
-        self._slant.trace_add("write", self._update_font_preview)
+        self.cur_fname.trace("w", self._update_font_preview)
         self.size.trace_add("write", self._update_font_preview)
+        self._slant.trace_add("write", self._update_font_preview)
         self._weight.trace_add("write", self._update_font_preview)
-        self._overstrike.trace_add("write", self._update_font_preview)
         self._underline.trace_add("write", self._update_font_preview)
+        self._overstrike.trace_add("write", self._update_font_preview)
 
         self.theme_settings()
         self.font_setting()
         self.buttonbox(self)
-
-        # width = utility.scale_size(self, 500)
-        # height = utility.scale_size(self, 600)
-        # self.geometry(f"{width}x{height}")
 
     def theme_settings(self):
         theme_frame = tb.LabelFrame(
@@ -376,36 +372,34 @@ class Settings(tb.Toplevel):
 
     def font_family_frame(self, master):
 
-        global font_family_lb
-        font_family_lb = tk.Listbox(
+        self.font_family_lb = tk.Listbox(
             master = master,
             relief = SOLID,
             borderwidth = 1,
             selectmode = SINGLE,
             listvariable = self._family,
         )
-        font_family_lb.selection_clear(0)
+        self.font_family_lb.selection_clear(0)
 
-        font_family_lb.selection_set(self.default_index)
-        font_family_lb.see(self.default_index)
+        self.font_family_lb.selection_set(self.default_index)
+        self.font_family_lb.see(self.default_index)
 
-        font_family_lb.bind("<<ListboxSelect>>", self._update_font_preview)
+        self.font_family_lb.bind("<<ListboxSelect>>", self.font_name_selected)
 
         font_family_lb_sb = tb.Scrollbar(
-            master = font_family_lb,
-            orient = tk.VERTICAL,
+            master = self.font_family_lb,
             style = ROUND,
-            command = font_family_lb.yview,
+            orient = tk.VERTICAL,
+            command = self.font_family_lb.yview,
         )
         font_family_lb_sb.pack(side = RIGHT, fill = Y)
-        font_family_lb["yscrollcommand"] = font_family_lb_sb.set
-        return font_family_lb
+        self.font_family_lb["yscrollcommand"] = font_family_lb_sb.set
+        return self.font_family_lb
 
     def font_size_frame(self, master):
         size_frame = tb.Frame(
             master = master,
         )
-        # size_frame.grid(row = 0, column = 1, sticky = "n", **self.padding)
 
         size_lbl = tb.Label(
             master = size_frame,
@@ -453,7 +447,7 @@ class Settings(tb.Toplevel):
         slant_lframe = tb.Labelframe(
             master, text = "Slant", padding = 5
         )
-        # slant_lframe.pack(side = LEFT, fill = X, padx = 10, expand = YES)
+
         opt_roman = tb.Radiobutton(
             master = slant_lframe,
             text = "roman",
@@ -475,7 +469,6 @@ class Settings(tb.Toplevel):
         effects_lframe = tb.Labelframe(
             master, text = "Effects", padding = 5
         )
-        # effects_lframe.pack(side = LEFT, padx = (2, 0), fill = X, expand = YES)
         opt_underline = tb.Checkbutton(
             master = effects_lframe,
             text = "underline",
@@ -492,7 +485,6 @@ class Settings(tb.Toplevel):
 
     def font_preview_frame(self, master, padding: int):
         container = tb.Frame(master, padding = padding)
-        # container.pack(fill = BOTH, expand = YES, anchor = N)
 
         header = tb.Label(
             container,
@@ -506,10 +498,9 @@ class Settings(tb.Toplevel):
         self.preview_text = tb.Text(
             master = container,
             height = 2,
-            # font = self._font,
         )
-        # self.preview_text.configure(height = utility.scale_size(self.preview_text, 3))
-        # self.preview_text.configure(width = utility.scale_size(self.preview_text, 20))
+        self.preview_text.configure(height = utility.scale_size(self.preview_text, 0))
+        self.preview_text.configure(width = utility.scale_size(self.preview_text, 0))
         self.preview_text.insert(END, content)
         self.preview_text.pack(fill = BOTH, expand = YES)
         # container.pack_propagate(False)
@@ -539,25 +530,31 @@ class Settings(tb.Toplevel):
         # cancel_btn.bind("<Return>", lambda _: cancel_btn.invoke())
 
     def _update_font_preview(self, *_):
-        _ = font_family_lb.curselection()
-        family = font_family_lb.get(_)
         size = self.size.get()
         slant = self._slant.get()
-        overstrike = self._overstrike.get()
+        weight = self._weight.get()
+        family = self.cur_fname.get()
         underline = self._underline.get()
+        overstrike = self._overstrike.get()
 
         self._font.config(
-            family = family,
             size = size,
             slant = slant,
-            overstrike = overstrike,
+            family = family,
+            weight = weight,
             underline = underline,
+            overstrike = overstrike,
         )
         try:
             self.preview_text.configure(font = self._font)
         except:
             pass
-        self._result = self._font
+        # self._result = self._font
+
+    def font_name_selected(self, *_):
+        fni = self.font_family_lb.curselection()
+        ff = self.font_family_lb.get(fni)
+        self.cur_fname.set(ff)
 
     def mode_func(self, *_):
         mode = self.mode_var.get()
