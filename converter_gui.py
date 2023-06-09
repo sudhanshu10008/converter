@@ -3,6 +3,7 @@ import tkinter as tk
 from tkinter import font
 import ttkbootstrap as tb
 import customtkinter as ctk
+from ttkbootstrap import utility
 from ttkbootstrap.constants import *
 from tkinter.messagebox import showwarning, showinfo
 
@@ -257,19 +258,24 @@ class Settings(tb.Toplevel):
         super().__init__()
         self.title("Settings")
         self.geometry()
+        # self.resizable(False, False)
 
         self._default = font.nametofont("TkDefaultFont")
         self._actual = self._default.actual()
-        self._size = tb.Variable(value = self._actual["size"])
-        self._family = tb.Variable(value = self._actual["family"])
+        self.size = tb.IntVar(value = self._actual["size"])
+        # self._family = tb.Variable(value = self._actual["family"])
         self._slant = tb.Variable(value = self._actual["slant"])
+        # print(type(self._actual["size"]))
+        # print(self._actual["size"])
         self._weight = tb.Variable(value = self._actual["weight"])
         self._overstrike = tb.Variable(value = self._actual["overstrike"])
         self._underline = tb.Variable(value = self._actual["underline"])
         self._font = font.Font()
 
-        self.f_names = font.families()
-        self.font_family_names = tk.Variable(value = self.f_names)
+        f_names = list(font.families())
+        f_names.sort()
+        self.default_index = f_names.index(self._actual["family"])
+        self._family = tk.Variable(value = f_names)
 
         self.padding = {'padx': 10, 'pady': 5}
 
@@ -282,10 +288,21 @@ class Settings(tb.Toplevel):
         self.theme_value = self.config_dic["light theme"]
         self.theme_var = tb.StringVar(value = self.theme_value[0])
 
+        self.mode_var.trace("w", self.mode_func)
         self.theme_var.trace("w", self.theme_change)
+        self._slant.trace_add("write", self._update_font_preview)
+        self.size.trace_add("write", self._update_font_preview)
+        self._weight.trace_add("write", self._update_font_preview)
+        self._overstrike.trace_add("write", self._update_font_preview)
+        self._underline.trace_add("write", self._update_font_preview)
 
         self.theme_settings()
         self.font_setting()
+        self.buttonbox(self)
+
+        # width = utility.scale_size(self, 500)
+        # height = utility.scale_size(self, 600)
+        # self.geometry(f"{width}x{height}")
 
     def theme_settings(self):
         theme_frame = tb.LabelFrame(
@@ -304,12 +321,11 @@ class Settings(tb.Toplevel):
         )
         mode.grid(row = 0, column = 0, **self.padding, sticky = "nsew", )
 
-        mode_opt = ctk.CTkOptionMenu(
+        mode_opt = tb.Combobox(
             master = theme_frame,
-            variable = self.mode_var,
+            state = "readonly",
+            textvariable = self.mode_var,
             values = self.mode_value,
-            command = self.mode_func,
-            corner_radius = 5,
         )
         mode_opt.grid(row = 0, column = 1, **self.padding, sticky = "nsew")
 
@@ -321,18 +337,9 @@ class Settings(tb.Toplevel):
         )
         theme_label.grid(row = 1, column = 0, **self.padding, sticky = "nsew", )
 
-        # theme_opt = tb.OptionMenu(
-        #     theme_frame,
-        #     self.theme_var,
-        #     self.theme_value[0],
-        #     *self.theme_value,
-        #     style = tb.DEFAULT,
-        #     direction = "below",
-        # )
         global theme_opt
         theme_opt = tb.Combobox(
             master = theme_frame,
-            font = self._font,
             state = "readonly",
             textvariable = self.theme_var,
             values = self.config_dic.get("light theme"),
@@ -369,15 +376,20 @@ class Settings(tb.Toplevel):
 
     def font_family_frame(self, master):
 
+        global font_family_lb
         font_family_lb = tk.Listbox(
             master = master,
-            # height = 10,
             relief = SOLID,
             borderwidth = 1,
             selectmode = SINGLE,
-            listvariable = self.font_family_names,
+            listvariable = self._family,
         )
-        # font_name_lb.pack(expand = True, fill = tk.BOTH, side = tk.LEFT)
+        font_family_lb.selection_clear(0)
+
+        font_family_lb.selection_set(self.default_index)
+        font_family_lb.see(self.default_index)
+
+        font_family_lb.bind("<<ListboxSelect>>", self._update_font_preview)
 
         font_family_lb_sb = tb.Scrollbar(
             master = font_family_lb,
@@ -387,7 +399,6 @@ class Settings(tb.Toplevel):
         )
         font_family_lb_sb.pack(side = RIGHT, fill = Y)
         font_family_lb["yscrollcommand"] = font_family_lb_sb.set
-        # font_name_frame_sb.grid(row = 0, column = 1, sticky = "ns")
         return font_family_lb
 
     def font_size_frame(self, master):
@@ -401,17 +412,16 @@ class Settings(tb.Toplevel):
             text = "Size:",
             font = "TkHeadingFont",
         )
-        size_lbl.pack(side = TOP, anchor = W)
+        size_lbl.grid(row = 0, column = 0, sticky = "sw")
 
         size_sb = tb.Spinbox(
             master = size_frame,
-            from_ = 1,
-            to = 100,
+            from_ = 7,
+            to = 30,
             increment = 1,
-            font = self._font,
-            textvariable = self._size,
+            textvariable = self.size,
         )
-        size_sb.pack(side = TOP, anchor = W)
+        size_sb.grid(row = 1, column = 0, sticky = NW)
         return size_frame
 
     def font_weight_frame(self, master):
@@ -495,27 +505,61 @@ class Settings(tb.Toplevel):
 
         self.preview_text = tb.Text(
             master = container,
-            height = 3,
-            font = self._font,
+            height = 2,
+            # font = self._font,
         )
+        # self.preview_text.configure(height = utility.scale_size(self.preview_text, 3))
+        # self.preview_text.configure(width = utility.scale_size(self.preview_text, 20))
         self.preview_text.insert(END, content)
         self.preview_text.pack(fill = BOTH, expand = YES)
         # container.pack_propagate(False)
 
         return container
 
-    # def items_selected(event):
-    #     # get selected indices
-    #     selected_indices = font_name_lb.curselection()
-    #     # get selected items
-    #     selected_langs = ",".join([font_name_lb.get(i) for i in selected_indices])
-    #     msg = f'You selected: {selected_langs}'
-    #
-    #         # showinfo(title = 'Information', message = msg)
-    #
-    #     font_name_lb.bind('<<ListboxSelect>>', items_selected)
+    def buttonbox(self, master):
+        container = tb.Frame(master, padding = (5, 10))
+        container.pack(fill = X, side = BOTTOM, )
 
-    def mode_func(self, event):
+        ok_btn = tb.Button(
+            master = container,
+            bootstyle = "primary",
+            text = "OK",
+            # command = self._on_submit,
+        )
+        ok_btn.pack(side = RIGHT, padx = 5)
+        # ok_btn.bind("<Return>", lambda _: ok_btn.invoke())
+
+        cancel_btn = tb.Button(
+            master = container,
+            bootstyle = "secondary",
+            text = "Cancel",
+            command = self.destroy,
+        )
+        cancel_btn.pack(side = RIGHT, padx = 5)
+        # cancel_btn.bind("<Return>", lambda _: cancel_btn.invoke())
+
+    def _update_font_preview(self, *_):
+        _ = font_family_lb.curselection()
+        family = font_family_lb.get(_)
+        size = self.size.get()
+        slant = self._slant.get()
+        overstrike = self._overstrike.get()
+        underline = self._underline.get()
+
+        self._font.config(
+            family = family,
+            size = size,
+            slant = slant,
+            overstrike = overstrike,
+            underline = underline,
+        )
+        try:
+            self.preview_text.configure(font = self._font)
+        except:
+            pass
+        self._result = self._font
+
+    def mode_func(self, *_):
         mode = self.mode_var.get()
         if mode == "Light":
             theme_opt.configure(values = self.config_dic.get("light theme"))
@@ -529,8 +573,8 @@ class Settings(tb.Toplevel):
         style = tb.Style()
         style.theme_use(theme_name)
 
-    def font_change(self, event):
-        print(self.font_family_names.get())
+    # def font_change(self, event):
+    #     print(self.font_family_names.get())
 
 
 ConverterGui()
